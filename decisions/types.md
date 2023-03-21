@@ -63,28 +63,47 @@ Unless they have params or options and return something other than HTML tags.
 
 To maintain syntax consistency with `ActiveRecord::Attributes` we've added an attribute class method to `T::Struct` which serves as an equivalent to the `const` prop provided by Sorbet natively.
 
-### Utilize helpers added to Sorbet by Changepack
+### Refactoring complex type signatures for better readability
 
-Some of Sorbet’s conventions do not seamlessly align with implicit Rails conventions, causing the code to appear verbose or disjointed.
+Sorbet's patterns may not always align smoothly with implicit Rails conventions, which can result in verbose or disjointed code. When a type signature becomes convoluted, consider splitting it into new type aliases. These aliases can be defined locally within the class or in the `T` module to indicate their common use throughout the system.
 
-### Apply chainable helpers
+Consider the following example, which updates an address and returns it or a collection of all addresses if there are multiple:
 
-Use chainable methods such as `nilable`, `array`, or `relation` which were inspired by Changepack’s `dry-rb` roots.
+```ruby
+sig { params(address: { line1: String, line2: T.nilable(String), city: String, code: String, country: String }).returns(T.any({ line1: String, line2: T.nilable(String), city: String, code: String, country: String }, T::Array[{ line1: String, line2: T.nilable(String), city: String, code: String, country: String }])) }
+def update(address)
+   ...
+end
+```
 
-* `T::String.nilable` is equivalent to `T.nilable(T::String)`
-* `T::String.array` is equivalent to `T::Array[T::String]`
-* `T::String | T::Symbol` is equivalent to `T.any(String, Symbol)`
-* `T::User.relation` is equivalent to `T.any(T::Array[User], ActiveRecord::Relation, ...)` with `User` being an Active Record model
-* All helpers are chainable, so you can write `T::String.nilable.array`
+This can be refactored into:
 
-As you may have noticed, types like `T::String` or `T::User` do not exist natively in Sorbet. We added them ourselves to enhance the developer experience. Each model automatically gets its own type.
+```ruby
+module T
+   Address = T.type_alias do
+     { line1: String, line2: T.nilable(String), city: String, code: String, country: String }
+   end
+end
 
-### Avoid using Changepack’s helpers if you don’t need the behaviors they introduce
+sig { params(address: T::Address).returns T.any(T::Address, T::Array[T::Address]) }
+def update(address)
+   ...
+end
+```
 
-For example, replace `sig { returns T::String }` with `sig { returns String }` as it doesn’t require the custom syntax we added. However, using `sig { returns T::String.nilable }` is acceptable.
+Some commonly used types have already been added:
+
+* `T::Time`: Equivalent to Time, DateTime, or ActiveSupport::TimeWithZone
+* `T::Key`: Equivalent to String or Symbol, makes working with hashes easier
+* `T::Payload`: For attributes in structs like metadata
+* Corresponding types for each model, like `User` and `T::User`, defined at the top of the model
+* Collection or relation types for each model, such as `User` and `T::Users`
+* `T::String`, `T::Symbol`, etc., for compatibility with `dry-initializer`, which expects the types of object's keywords to be blocks
+
+However, avoid using Changepack's helpers if their behaviors are not needed. For instance, replace `sig { returns T::String }` with `sig { returns String }` as the former does not require the type to be callable.
 
 ### Integrate with Active Record’s Attributes API when needed
 
-Use `T.instance(T::User)` to return an `ActiveRecord::Type::Value` class compatible with `ActiveRecord::Attributes` and suitable for typing attributes of PORO models and service objects that include `ActiveModel::Model`.
+Use `T.instance(User)` to return an `ActiveRecord::Type::Value` class compatible with `ActiveRecord::Attributes` and suitable for typing attributes of PORO models and service objects that include `ActiveModel::Model`.
 
-Technically, we could type models using `attribute :name, T.instance(T::String)` but we opt for `attribute :name, :string` to maintain simplicity and consistency with other Rails codebases. Reserve `T.instance` for Ruby objects that require custom casting. This approach aligns with the convention of avoiding Changepack helpers when the same result can be achieved natively, too.
+Technically, we could type models using `attribute :name, T.instance(String)` but we opt for `attribute :name, :string` to maintain simplicity and consistency with other Rails codebases. Reserve `T.instance` for Ruby objects that require custom casting. This approach aligns with the convention of avoiding Changepack helpers when the same result can be achieved natively, too.
