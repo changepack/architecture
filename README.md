@@ -12,8 +12,6 @@ This is an architecture repository for [Changepack](https://github.com/changepac
 
 ## Motivation
 
-The core team has 3 responsibilities:
-
 ### Align the architecture of the system to the project goals
 
 When the architecture does not correspond to the goals of the organisation, implementing each new feature takes longer with time, or even becomes impossible. The core team holds the responsibility of keeping the architecture clean and aligned with the project.
