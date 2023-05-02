@@ -31,7 +31,7 @@ On the other hand, microservices offer a loosely coupled architecture, allowing 
 
 Changepack's architecture can be described as a blend of simplicity and complexity, which is reflected in its various components. On one hand, the blog (changelog) aspect of the application is relatively simple and follows a standard structure, encompassing elements such as accounts, blogs, and posts. On the other hand, the application becomes more advanced and intricate when it comes to other parts of the system, particularly those that involve integrations with external applications like GitHub, Linear, or ChatGPT. These components demand a more sophisticated architectural approach, as they require seamless communication, data handling, and coordination between different services.
 
-This is why we opted for a hybrid approach that combines the best of both worlds. We decided to primarily adhere to The Rails Way for the majority of our architecture while incorporating a lightweight, event-based design for specific components where it adds value. This decision was driven by Changepack's focus on integrations, which necessitates a significant amount of behind-the-scenes back-end communication.
+This is why we opted for a hybrid approach that combines the best of both worlds. We decided to primarily adhere to The Rails Way for the majority of our architecture while incorporating a lightweight, event-based design for specific components where it adds value. This decision was driven by Changepack's focus on integrations, which necessitates a significant amount of behind-the-scenes back-end communication. We don’t use event sourcing, though.
 
 Why use events?
 
