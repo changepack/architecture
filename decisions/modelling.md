@@ -35,7 +35,7 @@ This is why we opted for a hybrid approach that combines the best of both worlds
 
 Why use events?
 
-* Events are inherently asynchronous, eliminating temporal coupling.
+* Events are commonly asynchronous, eliminating temporal coupling.
 * Events reduce coupling between components. By adhering to a defined schema, the event publisher only needs to know what to publish, without any knowledge of the subscribers. This approach allows for the seamless addition of new subscribers without altering the event publishing code.
 * Buffers. If a subscriber is temporarily offline due to deployment, maintenance, or failure, events will accumulate in the queue. Once the subscriber is back online, it will process the backlog of events, eventually achieving consistency with the rest of the system. This level of resilience would be difficult to achieve with synchronous communication methods.
 
